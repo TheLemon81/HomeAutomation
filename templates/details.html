@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Lemon's home frontpage</title>
+  <meta name="description" content="Lemon's home frontpage">
+  <meta name="author" content="Dave">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+
+   <table style="width:100%">
+          <tr>
+            <th>OUI</th>
+            <th>MAC</th>
+            <th>IP</th>
+            <th>address-book Entry?</th>
+            <th>Part of policy?</th>
+            <th>Add to firewall?</th>
+          </tr>
+{% for mac, details in macdict.iteritems() %}        
+          <tr>
+	    <td style = "text-align: center;">{{ details[2][2] }}</td>
+	    <td style = "text-align: center;">{{ details[2][1] }}</td>
+	    <td style = "text-align: center;">{{ details[1][1] }}</td>
+	    <td style = "text-align: center;">Yes - "LEMON MAC PRO"</td>
+	    <td style = "text-align: center;">Yes - "SAFE"</td>
+	    <td style = "text-align: center;"><button name="button">Add to SRX Policy: SAFE</button></td>
+	  </tr>
+{% endfor %}
+</table>
+</body>
