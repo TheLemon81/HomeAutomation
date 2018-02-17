@@ -28,10 +28,6 @@ def get_vendor(mac_addr):
         RESPONSE = requests.get(MAC_URL % mac_addr)
 	PARSED = RESPONSE.json()
 	COMPANY = PARSED['result']['company']
-	
-	"""This is a simple function that you can use to keep the logic of looking up the vendor nice and separate.
-	Obviously this is where you'd use `requests` to actually go look this up, but my dictionary mockup will suffice for now.
-	"""
     
 	mac_mappings = {
 		mac_addr: COMPANY,
@@ -62,14 +58,9 @@ def guestwifi():
 	tempdict = {}
 	for mac, details in arp_table.items():
 	    macs = list(details[2])
-            # Calling out to a separate function here keeps our loop clean
-            # Also using `append` instead of `insert` so we don't need to know length of list
             macs.append(get_vendor(mac))
             macs = tuple(macs)
             details[2]=macs
-            # We want to use `mac` instead of the static `k3y` we were previously setting to 0 statically in the first line.
-            # This was causing `tempdict` to overwrite the same value with each loop iteration.
-            # Now, we see as many macs as are present in `arp_table`
             tempdict[mac]=details
 	#
 	# Add the name of the address-book entry to the tempdict dictionary if it exists on the SRX
