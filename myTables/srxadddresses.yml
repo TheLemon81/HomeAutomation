@@ -1,0 +1,9 @@
+---
+AddressTable:
+  get: security/address-book/address
+  view: AddressView
+
+AddressView:
+  fields:
+    name: name
+    prefix: ip-prefix
