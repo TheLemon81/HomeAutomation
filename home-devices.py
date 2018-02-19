@@ -5,11 +5,23 @@ from flask import render_template
 from app import app
 from collections import defaultdict
 from myTables.srxadddresses import AddressTable
+import collections
 import os.path
 import requests
 import json
 
-
+#
+# method to convert unicode dictionary to utf-8
+#
+def convert(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert, data))
+    else:
+        return data
 #
 # match IP to SRX address-book entry
 #
@@ -53,15 +65,26 @@ def guestwifi():
 	address.get(values=True)
 	dev.close()
 	#
-	# sort through the arp_table dictionary and add the manufacture of the NIC's to the dictionary
+	# Read the only tempdict from the file.  Used to limit mac api queries and save time
+	# Then converts the JSON/Unicode dictionary to utf-8 so we can use it in the below
+	# for loop to be able to match dictionaryies
+	#
+	oldtempdict=json.load(open('tempdict.txt'))
+	oldtempdict=convert(oldtempdict)
+	#
+	# Sort through the arp_table dictionary and add the manufacture of the NIC's to the dictionary
+	# This also checks if the mac isn't already resolved via the MAC OUI function then add old entry
 	#
 	tempdict = {}
 	for mac, details in arp_table.items():
-	    macs = list(details[2])
-            macs.append(get_vendor(mac))
-            macs = tuple(macs)
-            details[2]=macs
-            tempdict[mac]=details
+		if mac not in oldtempdict:
+			macs = list(details[2])
+			macs.append(get_vendor(mac))
+			macs = tuple(macs)
+			details[2]=macs
+			tempdict[mac]=details
+		else:
+			tempdict[mac]=oldtempdict[mac]
 	#
 	# Add the name of the address-book entry to the tempdict dictionary if it exists on the SRX
 	#
@@ -80,6 +103,11 @@ def guestwifi():
 			newvalue = tuple(newvalue)
 			values[1]=newvalue
 			tempdict[mac]=values
+	#
+	# Write tempdict to a file so next time app loads it uses this to populate tempdict
+	#
+	with open('tempdict.txt', 'w') as file:
+		file.write(json.dumps(tempdict))	
 	#
 	# Return to the client HTTP session a rendered html page based off of details.html with the above data
 	#
